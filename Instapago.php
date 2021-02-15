@@ -1,19 +1,20 @@
 <?php
+
 /**
  * Plugin Name: Instapago Payment Gateway for WooCommerce
  * Plugin URI: https://www.behance.net/gallery/37073215/Instapago-Payment-Gateway-for-WooCommerce
  * Description: Instapago is a technological solution designed for the market of electronic commerce (eCommerce) in Venezuela and Latin America, with the intention of offering a premium product category, which allows people and companies leverage their expansion capabilities, facilitating payment mechanisms for customers with a friendly integration into systems currently used.
  * Text Domain: instapago
- * Version: 1.0.1
+ * Version: 6.0.0
  * Author: Angel Cruz
  * Author URI: http://abr4xas.org
- * Requires at least: 4.6
- * Tested up to: 4.7.
+ * Requires at least: 5.5
+ * Tested up to: 5.5
  *
  * @category Admin
  *
  * @author Angel Cruz
- * @copyright Copyright (C) Angel Cruz <me@abr4xas.org> and WooCommerce
+ * @copyright Copyright (C) Angel Cruz <bullgram@gmail.com> and WooCommerce
  */
 if (!defined('ABSPATH')) {
     exit;
@@ -22,6 +23,18 @@ if (!defined('ABSPATH')) {
 // Make sure WooCommerce is active
 if (!in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
     return;
+}
+// Register style
+add_action('wp_enqueue_scripts', 'register_plugin_styles');
+
+function register_plugin_styles()
+{
+    wp_register_style('instapago-plugin-styles', plugins_url('assets/css/style.css', __FILE__));
+    // Hay que prograpar la funcion localize script para que funcione correctamente
+    //wp_register_script( 'instapago-plugin-script', plugins_url( 'assets/js/main.js', __FILE__ ) );
+
+    wp_enqueue_style('instapago-plugin-styles');
+    //wp_enqueue_script( 'instapago-plugin-script' );
 }
 
 // Add custom action links
@@ -43,19 +56,16 @@ function instapago_action_links($links)
  *
  * @param array $methods all available WC gateways
  *
- * @return array $methods all WC gateways + WC_Gateway_Instapago_Commerce
+ * @return string[] $methods all WC gateways + WC_Gateway_Instapago_Commerce
  */
 function add_instapago_class($methods)
 {
-    $methods[] = 'WC_Gateway_Instapago_Commerce';
+    $methods[ ] = 'WC_Gateway_Instapago_Commerce';
 
     return $methods;
 }
 
 add_filter('woocommerce_payment_gateways', 'add_instapago_class');
-
-// PHPMailer Class from WP core
-include_once ABSPATH.WPINC.'/class-phpmailer.php';
 
 /*
  * Instapago Payment Gateway for WooCommerce
@@ -64,7 +74,7 @@ include_once ABSPATH.WPINC.'/class-phpmailer.php';
  *
  * @class 		WC_Gateway_Instapago_Commerce
  * @extends		WC_Payment_Gateway
- * @version		1.0.0
+ * @version		5.0.1
  * @package		WooCommerce/Classes/Payment
  * @author 		Angel Cruz
  */
@@ -75,69 +85,36 @@ function init_instapago_class()
     class WC_Gateway_Instapago_Commerce extends WC_Payment_Gateway
     {
         /**
-         * WooCommerce version.
-         *
-         * @var string
-         */
-        public $version = '1.0.1';
-
-        /**
-         * @param bool Whether or not logging is enabled
-         */
-        public static $log_enabled = false;
-
-        /**
-         * @param WC_Logger Logger instance
-         */
-        public static $log = false;
-
-        /**
          * Constructor for the gateway.
          */
         public function __construct()
         {
             global $woocommerce;
             $this->id = 'instapago';
-            $this->order_button_text = __('Pagar con Instapago', 'woocommerce');
-            $this->medthod_title = __('Instapago', 'woocommerce');
-            $this->method_description = sprintf(__('Es una solución tecnológica pensada para el mercado de comercio electrónico (eCommerce) en Venezuela y Latinoamérica, con la intención de ofrecer un producto de primera categoría, que permita a las personas y empresas apalancar sus capacidades de expansión, facilitando los mecanismos de pago para sus clientes, con una integración amigable a los sistemas que actualmente utilizan.', 'woocommerce'));
+            $this->order_button_text    = __('Pagar con Instapago', 'woocommerce');
+            $this->medthod_title        = __('Instapago', 'woocommerce');
+            $this->method_description   = sprintf(__('Es una solución tecnológica pensada para el mercado de comercio electrónico (eCommerce) en Venezuela y Latinoamérica, con la intención de ofrecer un producto de primera categoría, que permita a las personas y empresas apalancar sus capacidades de expansión, facilitando los mecanismos de pago para sus clientes, con una integración amigable a los sistemas que actualmente utilizan.', 'woocommerce'));
             $this->has_fields = true;
             // Load the settings.
             $this->init_form_fields();
             $this->init_settings();
             // Define user set variables.
-            $this->title = $this->get_option('title');
-            $this->description = $this->get_option('description');
-            $this->keyId = $this->get_option('api_keyId');
-            $this->publicKeyId = $this->get_option('api_publicKeyId');
-            $this->debug = $this->get_option('debug', 'yes');
-            $this->paymod = $this->get_option('paymentaction');
+            $this->title        = $this->get_option('title');
+            $this->description  = $this->get_option('description');
+            $this->keyId        = $this->get_option('api_keyId');
+            $this->publicKeyId  = $this->get_option('api_publicKeyId');
+            $this->debug        = $this->get_option('debug', 'yes');
+            $this->paymod       = $this->get_option('paymentaction');
             // Define custom message for email
-            $this->headerMail = $this->get_option('mail_header');
-            $this->subheaderMail = $this->get_option('mail_subheader');
-            self::$log_enabled = $this->debug;
+            $this->headerMail       = $this->get_option('mail_header');
+            $this->subheaderMail    = $this->get_option('mail_subheader');
 
-            $this->msg['message'] = '';
-            $this->msg['class'] = '';
+            $this->msg[ 'message' ]   = '';
+            $this->msg[ 'class' ]     = '';
             //Save hook
-            add_action('woocommerce_update_options_payment_gateways_'.$this->id, [$this, 'process_admin_options']);
-            add_action('woocommerce_receipt_lamdaprocessing', [&$this, 'finalize_order'], 0);
-            add_action('woocommerce_receipt_lamdaprocessing', [&$this, 'receipt_page']);
-        }
-
-        /**
-         * Logging method.
-         *
-         * @param string $message
-         */
-        public static function log($message)
-        {
-            if (self::$log_enabled) {
-                if (empty(self::$log)) {
-                    self::$log = new WC_Logger();
-                }
-                self::$log->add('instapago', $message);
-            }
+            add_action('woocommerce_update_options_payment_gateways_'.$this->id, [ $this, 'process_admin_options' ]);
+            add_action('woocommerce_receipt_lamdaprocessing', [ &$this, 'finalize_order' ], 0);
+            add_action('woocommerce_receipt_lamdaprocessing', [ &$this, 'receipt_page' ]);
         }
 
         /**
@@ -165,7 +142,7 @@ function init_instapago_class()
          */
         public function get_icon()
         {
-            $icon_html = '<img src="'.plugins_url('instapago/images/instapago-gateway.png').'" alt="Instapago">';
+            $icon_html = '<img src="'.plugins_url('instapago/assets/images/instapago-gateway.png').'" alt="Instapago">';
 
             return apply_filters('woocommerce_gateway_icon', $icon_html, $this->id);
         }
@@ -184,14 +161,14 @@ function init_instapago_class()
         public function process_payment($order_id)
         {
             global $woocommerce;
-            $order = new WC_Order($order_id);
-            $url = 'https://api.instapago.com/payment';
-            $cardHolder = strip_tags(trim($_POST['card_holder_name']));
-            $cardHolderId = strip_tags(trim($_POST['user_dni']));
-            $cardNumber = strip_tags(trim($_POST['valid_card_number']));
-            $cvc = strip_tags(trim($_POST['cvc_code']));
-            $exp_month = strip_tags(trim($_POST['exp_month']));
-            $exp_year = strip_tags(trim($_POST['exp_year']));
+            $url            = 'https://api.instapago.com/payment';
+            $order          = wc_get_order($order_id);
+            $cardHolder     = strip_tags(trim($_POST[ 'card_holder_name' ]));
+            $cardHolderId   = strip_tags(trim($_POST[ 'user_dni' ]));
+            $cardNumber     = strip_tags(trim($_POST[ 'valid_card_number' ]));
+            $cvc            = strip_tags(trim($_POST[ 'cvc_code' ]));
+            $exp_month      = strip_tags(trim($_POST[ 'exp_month' ]));
+            $exp_year       = strip_tags(trim($_POST[ 'exp_year' ]));
             $expirationDate = $exp_month.'/'.$exp_year;
 
             $fields = [
@@ -204,84 +181,58 @@ function init_instapago_class()
                 'CardNumber'     => $cardNumber, //required
                 'CVC'            => $cvc, //required
                 'ExpirationDate' => $expirationDate, //required
-                'StatusId'       => $this->paymod, //required
+                'StatusId'       => 2, //required
                 'IP'             => $_SERVER['REMOTE_ADDR'], //required
             ];
 
             $obj = $this->curlTransaccion($url, $fields);
-
             $result = $this->checkResponseCode($obj);
 
             if ($result['code'] == 201) {
                 // Payment received and stock has been reduced
+
                 $order->payment_complete();
-                $order->add_order_note(__('Mensaje del Banco:<br/> <strong>'.$result['msg_banco'].'</strong><br/> Número de Identificación del Pago:<br/><strong>'.$result['id_pago'].'</strong><br/>Referencia Bancaria: <br/><strong>'.$result['reference'].'</strong>', 'woothemes'));
+                $order->add_order_note(__('Mensaje del Banco:<br/> <strong>'.$result[ 'msg_banco' ].'</strong><br/> Número de Identificación del Pago:<br/><strong>'.$result[ 'id_pago' ].'</strong><br/>Referencia Bancaria: <br/><strong>'.$result[ 'reference' ].'</strong>', 'woothemes'));
 
                 if ($this->debug == 'yes') {
-                    $this->log(': se ha procesado un pago ');
-                    file_put_contents(dirname(__FILE__).'/data.log', print_r($result, true)."\n\n".'======================'."\n\n", FILE_APPEND);
+                    $logger = wc_get_logger();
+                    $context = [
+                        'source' => 'instapago',
+                    ];
+                    $logger->log('info', 'Se ha procesado un pago', $result);
+                    $logger->log('info', print_r($result, true), $context);
+                    file_put_contents(dirname(__FILE__).'/data.log', print_r($result, true)."\n\n".'======================'."\n\n", FILE_APPEND | LOCK_EX);
                 }
 
-                // Set vars
-                $adminEmail = get_option('admin_email', '');
-                $siteUrl = get_site_url();
-                $sender = get_bloginfo('name', 'display');
-                $customerEmail = $order->billing_email;
-                $customerName = $order->last_name.' '.$order->first_name;
-                $voucher = $result['voucher'];
-                $headerMail = $this->headerMail;
-                $subheaderMail = $this->subheaderMail;
-                $copyfooter = '';
-
-                update_post_meta($order->id, 'instapago_voucher', $voucher);
-
-                if ($img = get_option('woocommerce_email_header_image')) {
-                    $logoCorreo = '<a target="_blank" style="text-decoration: none;" href="'.$siteUrl.'"><img border="0" vspace="0" hspace="0" src="'.esc_url($img).'" alt="'.get_bloginfo('name', 'display').'" title="'.get_bloginfo('name', 'display').'" style="color: #000000;font-size: 10px; margin: 0; padding: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: none; display: block;"/></a>';
-                }
-
-                $logoCorreo = '';
-
-                // Retrieve the email template required
-                $message = file_get_contents('email.html', dirname(__FILE__));
-
-                // Replace the % with the actual information
-                $message = str_replace('%logo%', $logoCorreo, $message);
-                $message = str_replace('%headerMail%', $headerMail, $message);
-                $message = str_replace('%subheaderMail%', $subheaderMail, $message);
-                $message = str_replace('%voucher%', $voucher, $message);
-                $message = str_replace('%copyfooter%', $copyfooter, $message);
-
-                // send voucher
-                $wpAdmin = $adminEmail;
-                $wpBlogName = $sender;
-                $customer = $customerEmail;
-                $customSubject = 'Recibo de tu pedido en ';
-                $customMsg = $message;
-
-                $this->SendCustomEmail($wpAdmin, $wpBlogName, $customer, $customSubject, $customMsg);
+                update_post_meta($order_id, 'instapago_voucher', $result[ 'voucher' ]);
+                update_post_meta($order_id, 'instapago_bank_ref', $result[ 'reference' ]);
+                update_post_meta($order_id, 'instapago_id_payment', $result[ 'id_pago' ]);
+                update_post_meta($order_id, 'instapago_bank_msg', $result[ 'msg_banco' ]);
+                update_post_meta($order_id, 'instapago_sequence', $result[ 'sequence' ]);
+                update_post_meta($order_id, 'instapago_approval', $result[ 'approval' ]);
+                update_post_meta($order_id, 'instapago_lote', $result[ 'lote' ]);
 
                 // Mark as complete
                 $order->update_status('completed');
 
                 // Reduce stock levels
-                $order->reduce_order_stock();
+                wc_reduce_stock_levels($order_id);
 
                 // Remove cart
-                $woocommerce->cart->empty_cart();
+                WC()->cart->empty_cart();
 
                 // Return thankyou redirect
                 return [
-                    'result'   => 'success',
-                    'redirect' => $this->get_return_url($order),
+                    'result'      => 'success',
+                    'redirect'    => $this->get_return_url($order),
                 ];
             }
         }
-
         /**
          * Realiza Transaccion
          * Efectúa y retornar una respuesta a un metodo de pago.
          *
-         * @param $url endpoint a consultar
+         * @param string $url endpoint a consultar
          * @param $fields datos para la consulta
          *
          * @return $obj array resultados de la transaccion
@@ -313,63 +264,37 @@ function init_instapago_class()
         public function checkResponseCode($obj)
         {
             $code = $obj->code;
-            $msg = $obj->message;
-            if ($code == 400) {
-                throw new \Exception('Error al validar los datos enviados.');
-            } elseif ($code == 401) {
-                throw new \Exception('Error de autenticación, ha ocurrido un error con las llaves utilizadas.');
-            } elseif ($code == 403) {
-                throw new \Exception('Pago Rechazado por el banco.');
-            } elseif ($code == 500) {
-                throw new \Exception('Ha Ocurrido un error interno dentro del servidor.');
-            } elseif ($code == 503) {
-                throw new \Exception('Ha Ocurrido un error al procesar los parámetros de entrada. Revise los datos enviados y vuelva a intentarlo.');
-            } elseif ($code == 201) {
-                return [
-                    'code'      => $code,
-                    'msg_banco' => $msg,
-                    'voucher'   => html_entity_decode($obj->voucher),
-                    'id_pago'   => $obj->id,
-                    'reference' => $obj->reference,
-                ];
-            }
-        }
-
-        public function SendCustomEmail($wpAdmin, $wpBlogName, $customer, $customSubject, $customMsg)
-        {
-            $adminEmail = $wpAdmin; // root admin
-            $sender = $wpBlogName; // Site name
-            $customerEmail = $customer; // woocommerce customer email
-            $msg = $customSubject; // custom subject
-            $message = $customMsg; // custom msg
-
-            // Setup PHPMailer
-            $mail = new PHPMailer();
-            $mail->isSMTP();
-            $mail->SMTPDebug = 2;
-            $mail->Debugoutput = 'html';
-            $mail->Host = '127.0.0.1';
-            $mail->Port = 25;
-            $mail->setFrom($adminEmail, $sender);
-            $mail->addAddress($customerEmail);
-            $mail->isHTML(true);
-            $mail->SMTPOptions = [
-                'ssl' => [
-                    'verify_peer'       => false,
-                    'verify_peer_name'  => false,
-                    'allow_self_signed' => true,
-                ],
-            ];
-
-            // Set the subject
-            $mail->Subject = $msg.''.$sender;
-
-            //Set the message
-            $mail->MsgHTML($message);
-
-            // Send the email
-            if (!$mail->Send()) {
-                $this->log('Mailer Error: '.$mail->ErrorInfo);
+            switch ($code) {
+                case 400:
+                    throw new \Exception('Error al validar los datos enviados.');
+                    break;
+                case 401:
+                    throw new \Exception('Error de autenticación, ha ocurrido un error con las llaves utilizadas.');
+                    break;
+                case 403:
+                    throw new \Exception('Pago Rechazado por el banco.');
+                    break;
+                case 500:
+                    throw new \Exception('Ha Ocurrido un error interno dentro del servidor.');
+                    break;
+                case 503:
+                    throw new \Exception('Ha Ocurrido un error al procesar los parámetros de entrada. Revise los datos enviados y vuelva a intentarlo.');
+                    break;
+                case 201:
+                    return [
+                        'code'      => $code,
+                        'msg_banco' => $obj->message,
+                        'voucher'   => html_entity_decode($obj->voucher),
+                        'id_pago'   => $obj->id,
+                        'reference' => $obj->reference,
+                        'sequence'  => $obj->sequence,
+                        'approval'  => $obj->approval,
+                        'lote'      => $obj->lote,
+                    ];
+                    break;
+                default:
+                    throw new \Exception('Error general...');
+                    break;
             }
         }
     } // End WC_Gateway_Instapago_Commerce

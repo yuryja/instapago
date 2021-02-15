@@ -1,12 +1,11 @@
-Instapago Payment Gateway for WooCommerce
----
+=== Instapago Payment Gateway for WooCommerce ===
 
 Contributors: abr4xas
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=webmaster%40abr4xas%2eorg&lc=VE&no_note=1&no_shipping=1&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
+Donate link:
 Tags: ecommerce, e-commerce, store, sales, sell, shop, cart, checkout, venezuela, instapago, banesco
-Requires at least: 4.6
-Tested up to: 4.7
-Stable tag: 1.0.1
+Requires at least: 5.5
+Tested up to: 5.5
+Stable tag:6.0.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -32,6 +31,9 @@ Upload the plugin files to the `/wp-content/plugins/instapago` directory, or ins
 * Certificate your website on Instapago sending a email to soporte@instapago.com and swith your account to production Mode.
 * Get "Llave Publica" and "Llave Privada" for production mode (Modo de Producción).
 
+= Voucher =
+
+Please, read this: https://github.com/abr4xas/instapago/wiki/Capturar-VOUCHER
 
 == Screenshots ==
 
@@ -41,4 +43,23 @@ Upload the plugin files to the `/wp-content/plugins/instapago` directory, or ins
 
 == Changelog ==
 
-TODO
+= 6.0.0 =
+*Release Date - 11 Ago 2020*
+
+* Desactiva envio de voucher por correo.
+* Agrega mejoras en el código.
+
+
+
+
+* Actualizado soporte a WordPress
+* Fix error log
+* Envio de voucher por correo
+* Agrega mejoras en el responsive propuestas por Andres Vasquez
+* Se solucionan errores con funciones deprecadas en la versión 3.0 de Woocommerce
+* Se elimina envio de voucher por correo
+* Solucionado el error de no crear los `log` en modo desarrollo
+* Se agrega mas informacion en la orden creada en woocommerce
+* Se modifica numero de version
+* Actualizado el formulario de pago
+* Actualiza PHPMailer

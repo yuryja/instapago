@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Configuración de Instapago.
  *
  * @category Admin
  *
  * @author Angel Cruz
- * @copyright Copyright (C) Angel Cruz <me@abr4xas.org> and WooCommerce
+ * @copyright Copyright (C) Angel Cruz <bullgram@gmail.com> and WooCommerce
  */
 if (!defined('ABSPATH')) {
     exit;
@@ -56,18 +57,6 @@ return [
         'desc_tip'    => true,
         'placeholder' => __('Requerido', 'woocommerce'),
     ],
-    'paymentaction' => [
-        'title'       => __('Payment Action', 'woocommerce'),
-        'type'        => 'select',
-        'class'       => 'wc-enhanced-select',
-        'description' => __('Debe indicar si desea retener o autorizar el pago.', 'woocommerce'),
-        'default'     => '2',
-        'desc_tip'    => true,
-        'options'     => [
-            '1'          => __('Retener (pre-autorización)', 'woocommerce'),
-            '2'          => __('Pagar (autorización).', 'woocommerce'),
-        ],
-    ],
     'api_debug' => [
         'title'       => __('Modo de depuración', 'woocommerce'),
         'type'        => 'title',
@@ -79,26 +68,5 @@ return [
         'label'       => __('Enable logging', 'woocommerce'),
         'default'     => 'yes',
         'description' => sprintf(__('Save Instapago events inside <code>%s</code>', 'woocommerce'), wc_get_log_file_path('instapago')),
-    ],
-    'mail_details' => [
-        'title'       => __('Mensajes personalizados en el correo de confirmación de compras', 'woocommerce'),
-        'type'        => 'title',
-        'description' => sprintf(__('En este apartado puede configurar los mensajes que van aparecer en el correo de confirmación de compra que se le envía al cliente junto al voucher.<br/> Todos estos mensajes son necesarios.', 'woocommerce')),
-    ],
-    'mail_header' => [
-        'title'       => __('Mensaje principal del correo', 'woocommerce'),
-        'type'        => 'text',
-        'description' => __('Mensaje principal del correo', 'woocommerce'),
-        'default'     => 'Confirmación de Compra',
-        'desc_tip'    => true,
-        'placeholder' => __('Requerido', 'woocommerce'),
-    ],
-    'mail_subheader' => [
-        'title'       => __('Mensaje secundario del correo', 'woocommerce'),
-        'type'        => 'text',
-        'description' => __('Mensaje secundario del correo', 'woocommerce'),
-        'default'     => 'Acontinuación el Voucher de su compra. Guarde para sus archivos',
-        'desc_tip'    => true,
-        'placeholder' => __('Requerido', 'woocommerce'),
     ],
 ];
